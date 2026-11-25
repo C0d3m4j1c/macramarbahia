@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import { categories, formatPrice, type Product } from '../data/products';
+import { getImage } from '../lib/images';
+
+interface Props {
+  product: Product;
+  eager?: boolean;
+}
+const { product, eager = false } = Astro.props;
+---
+
+<a class="card" href={`/producto/${product.slug}`} data-category={product.category}>
+  <div class="card__media">
+    <Image
+      src={getImage(product.image)}
+      alt={product.alt}
+      widths={[320, 480, 640]}
+      sizes="(max-width: 600px) 90vw, 300px"
+      loading={eager ? 'eager' : 'lazy'}
+    />
+    {product.sold && <span class="badge">Vendido</span>}
+  </div>
+  <div class="card__cat">{categories[product.category].label}</div>
+  <h3 class="card__name">{product.name}</h3>
+  <div class="card__price">
+    {product.price !== null ? formatPrice(product.price) : 'Cotiza por WhatsApp'}
+  </div>
+</a>

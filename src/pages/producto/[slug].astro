@@ -1,0 +1,109 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import WhatsAppIcon from '../../components/WhatsAppIcon.astro';
+import { categories, formatPrice, products, type Product } from '../../data/products';
+import { getImage } from '../../lib/images';
+import { site, waLink } from '../../config';
+
+export function getStaticPaths() {
+  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+interface Props {
+  product: Product;
+}
+const { product } = Astro.props;
+
+const related = products
+  .filter((p) => p.category === product.category && p.slug !== product.slug)
+  .slice(0, 3);
+
+const message = `Hola Macramar Bahía 👋 Me interesa "${product.name}". ¿Está disponible?`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: product.name,
+  description: product.description,
+  brand: { '@type': 'Brand', name: site.name },
+  ...(product.price !== null && {
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: site.currency,
+      price: product.price,
+      availability: product.sold
+        ? 'https://schema.org/SoldOut'
+        : 'https://schema.org/InStock',
+    },
+  }),
+};
+---
+
+<Base
+  title={product.name}
+  description={product.description}
+  ogImage={product.image}
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <nav class="crumbs" aria-label="Ruta">
+        <a href="/tienda">Tienda</a> / <a href={`/tienda?cat=${product.category}`}>{categories[product.category].label}</a>
+      </nav>
+
+      <div class="product">
+        <div class="product__media">
+          <Image
+            src={getImage(product.image)}
+            alt={product.alt}
+            widths={[480, 720, 960]}
+            sizes="(max-width: 860px) 95vw, 640px"
+            loading="eager"
+          />
+        </div>
+
+        <div>
+          <span class="eyebrow">{categories[product.category].label}</span>
+          <h1 style="font-size:clamp(2.2rem,5vw,3.2rem)">{product.name}</h1>
+          <div class="product__price">
+            {product.sold ? 'Vendido' : product.price !== null ? formatPrice(product.price) : 'Cotiza por WhatsApp'}
+          </div>
+          <p>{product.description}</p>
+
+          <a
+            class="btn btn--wa"
+            href={waLink(message)}
+            target="_blank"
+            rel="noopener"
+            aria-disabled={product.sold ? 'true' : undefined}
+          >
+            <WhatsAppIcon size={18} /> Pedir por WhatsApp
+          </a>
+
+          <ul class="product__list">
+            <li>Hecho a mano</li>
+            <li>Pieza única</li>
+            <li>¿Otro color o medida? Escríbenos y lo tejemos para ti</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="section" style="padding-top:0">
+        <div class="container">
+          <h2>También te puede gustar</h2>
+          <div class="grid">
+            {related.map((p) => (
+              <ProductCard product={p} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>

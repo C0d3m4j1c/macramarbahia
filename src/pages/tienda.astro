@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { categories, products } from '../data/products';
+---
+
+<Base
+  title="Tienda"
+  description="Explora tapices, bolsos, colgantes para plantas y accesorios de macramé hechos a mano."
+>
+  <section class="section">
+    <div class="container">
+      <span class="eyebrow">Colección</span>
+      <h1 style="font-size:clamp(2.2rem,5vw,3.4rem)">Tienda</h1>
+
+      <div class="filters" role="group" aria-label="Filtrar por categoría">
+        <button class="chip is-active" data-filter="all">Todo</button>
+        {
+          Object.entries(categories).map(([key, c]) => (
+            <button class="chip" data-filter={key}>
+              {c.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="grid" id="grid">
+        {products.map((p, i) => <ProductCard product={p} eager={i < 4} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
+  const cards = document.querySelectorAll<HTMLElement>('#grid .card');
+
+  function apply(filter: string) {
+    chips.forEach((c) => c.classList.toggle('is-active', c.dataset.filter === filter));
+    cards.forEach((card) => {
+      card.hidden = !(filter === 'all' || card.dataset.category === filter);
+    });
+    const url = new URL(location.href);
+    if (filter === 'all') url.searchParams.delete('cat');
+    else url.searchParams.set('cat', filter);
+    history.replaceState(null, '', url);
+  }
+
+  chips.forEach((chip) => chip.addEventListener('click', () => apply(chip.dataset.filter!)));
+
+  const initial = new URLSearchParams(location.search).get('cat');
+  if (initial && [...chips].some((c) => c.dataset.filter === initial)) apply(initial);
+</script>
