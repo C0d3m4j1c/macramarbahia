@@ -1,0 +1,120 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import WhatsAppIcon from '../components/WhatsAppIcon.astro';
+import { categories, formatPrice, products, type Product } from '../data/products';
+import { getImage } from '../lib/images';
+import { site, waLink } from '../config';
+import { productPath, shopPath, t, localeMeta, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  product: Product;
+}
+const { locale, product } = Astro.props;
+const ui = t(locale);
+const text = product.text[locale];
+
+const related = products
+  .filter((p) => p.category === product.category && p.slug !== product.slug)
+  .slice(0, 3);
+
+const paths = {
+  es: productPath('es', product.slug),
+  en: productPath('en', product.slug),
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: text.name,
+  description: text.description,
+  inLanguage: localeMeta[locale].htmlLang,
+  brand: { '@type': 'Brand', name: site.name },
+  ...(product.price !== null && {
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: site.currency,
+      price: product.price,
+      availability: product.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+    },
+  }),
+};
+---
+
+<Base
+  locale={locale}
+  paths={paths}
+  title={text.name}
+  description={text.description}
+  ogImage={product.image}
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <nav class="crumbs" aria-label={ui.product.breadcrumb}>
+        <a href={shopPath(locale)}>{ui.nav.shop}</a> /
+        <a href={shopPath(locale, product.category)}>{categories[product.category][locale].label}</a>
+      </nav>
+
+      <div class="product">
+        <div class="product__media">
+          <Image
+            src={getImage(product.image)}
+            alt={text.alt}
+            widths={[480, 720, 960]}
+            sizes="(max-width: 860px) 95vw, 640px"
+            loading="eager"
+          />
+        </div>
+
+        <div>
+          <span class="eyebrow">{categories[product.category][locale].label}</span>
+          <h1 style="font-size:clamp(2.2rem,5vw,3.2rem)">{text.name}</h1>
+          <div class="product__price">
+            {
+              product.sold
+                ? ui.product.sold
+                : product.price !== null
+                  ? formatPrice(product.price, locale)
+                  : ui.product.quote
+            }
+          </div>
+          <p>{text.description}</p>
+
+          <a
+            class="btn btn--wa"
+            href={waLink(ui.wa.product(text.name))}
+            target="_blank"
+            rel="noopener"
+            aria-disabled={product.sold ? 'true' : undefined}
+          >
+            <WhatsAppIcon size={18} /> {ui.product.order}
+          </a>
+
+          <ul class="product__list">
+            <li>{ui.product.handmade}</li>
+            <li>{ui.product.unique}</li>
+            <li>{ui.product.custom}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="section" style="padding-top:0">
+        <div class="container">
+          <h2>{ui.product.related}</h2>
+          <div class="grid">
+            {related.map((p) => (
+              <ProductCard product={p} locale={locale} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>

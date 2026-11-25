@@ -1,16 +1,13 @@
 // Single place to edit brand + contact details.
+// Translatable text (taglines, descriptions, buttons...) lives in src/i18n/ui.ts.
 export const site = {
   name: 'Macramar Bahía',
   handle: 'macramar.bahia',
-  tagline: 'Arte que decora tu vida',
-  description:
-    'Macramé artesanal hecho a mano: tapices, bolsos, colgantes para plantas y accesorios. Piezas únicas con alma, desde Bahía.',
   url: 'https://macramarbahia.com', // keep in sync with astro.config.mjs
   // WhatsApp number in international format, digits only (52 = Mexico).
   whatsapp: '523227289675',
   whatsappDisplay: '322 728 9675',
   instagram: 'https://www.instagram.com/macramar.bahia',
-  locale: 'es_MX',
   currency: 'MXN',
 };
 

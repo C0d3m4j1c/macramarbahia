@@ -545,3 +545,27 @@ p {
     scroll-behavior: auto !important;
   }
 }
+
+/* Language switcher */
+.lang {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.18rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+}
+.lang__item {
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.nav .lang a.lang__item {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+}
+.lang__item.is-active {
+  background: var(--navy);
+  color: #fff;
+}

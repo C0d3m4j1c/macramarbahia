@@ -1,0 +1,128 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import WhatsAppIcon from '../components/WhatsAppIcon.astro';
+import { categories, products } from '../data/products';
+import { getImage } from '../lib/images';
+import { site, waLink } from '../config';
+import { homePath, shopPath, t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const ui = t(locale);
+const featured = products.filter((p) => p.featured).slice(0, 6);
+const paths = { es: homePath('es'), en: homePath('en') };
+---
+
+<Base locale={locale} paths={paths}>
+  <section class="hero">
+    <div class="container section hero__grid">
+      <div>
+        <span class="eyebrow">{ui.hero.eyebrow}</span>
+        <h1>{ui.meta.tagline}</h1>
+        <p class="lead">{ui.hero.lead}</p>
+        <div class="hero__actions">
+          <a class="btn" href={shopPath(locale)}>{ui.hero.ctaCollection}</a>
+          <a class="btn btn--ghost" href={waLink(ui.wa.design)} target="_blank" rel="noopener">
+            <WhatsAppIcon size={18} /> {ui.hero.ctaDesign}
+          </a>
+        </div>
+      </div>
+      <div class="hero__image">
+        <Image
+          src={getImage('mini-tapiz-canela.jpg')}
+          alt={ui.hero.imageAlt}
+          widths={[480, 720, 960]}
+          sizes="(max-width: 860px) 90vw, 480px"
+          loading="eager"
+        />
+      </div>
+    </div>
+  </section>
+
+  <div class="values">
+    <div class="container values__grid">
+      <span>{ui.values.handmade}</span>
+      <span>{ui.values.unique}</span>
+      <span>{ui.values.soul}</span>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">{ui.featured.eyebrow}</span>
+          <h2>{ui.featured.title}</h2>
+        </div>
+        <a class="btn btn--ghost" href={shopPath(locale)}>{ui.featured.all}</a>
+      </div>
+      <div class="grid">
+        {featured.map((p, i) => <ProductCard product={p} locale={locale} eager={i < 3} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">{ui.categories.eyebrow}</span>
+          <h2>{ui.categories.title}</h2>
+        </div>
+      </div>
+      <div class="tiles">
+        {
+          Object.entries(categories).map(([key, c]) => (
+            <a class="tile" href={shopPath(locale, key)}>
+              <h3>{c[locale].label}</h3>
+              <p>{c[locale].blurb}</p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section story" id="marca">
+    <div class="container story__grid">
+      <div class="story__image">
+        <Image
+          src={getImage('vestido-azul.jpg')}
+          alt={ui.story.imageAlt}
+          widths={[480, 720]}
+          sizes="(max-width: 860px) 90vw, 480px"
+        />
+      </div>
+      <div>
+        <span class="eyebrow">{ui.story.eyebrow}</span>
+        <h2>{ui.story.title}</h2>
+        <!-- TODO: replace with your real story (edit es and en in src/i18n/ui.ts) -->
+        <p>{ui.story.p1}</p>
+        <p>{ui.story.p2}</p>
+        <a class="btn" href={waLink(ui.wa.custom)} target="_blank" rel="noopener">
+          {ui.story.cta}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta" id="contacto">
+    <div class="container">
+      <span class="eyebrow" style="color:var(--sand)">{ui.contact.eyebrow}</span>
+      <h2>{ui.contact.title}</h2>
+      <p class="lead">{ui.contact.lead}</p>
+      <div class="cta__actions">
+        <a class="btn btn--wa" href={waLink(ui.wa.hello)} target="_blank" rel="noopener">
+          <WhatsAppIcon size={18} /> {site.whatsappDisplay}
+        </a>
+        <a class="btn btn--ghost" href={site.instagram} target="_blank" rel="noopener">
+          Instagram @{site.handle}
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
