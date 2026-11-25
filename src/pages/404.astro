@@ -1,14 +1,26 @@
 ---
+// Cloudflare serves a single /404.html for the whole site, so this page is bilingual.
 import Base from '../layouts/Base.astro';
+import { homePath, shopPath, t } from '../i18n/ui';
+
+const es = t('es');
+const en = t('en');
+const paths = { es: homePath('es'), en: homePath('en') };
 ---
 
-<Base title="Página no encontrada">
+<Base locale="es" paths={paths} title="404">
   <section class="section">
     <div class="container" style="text-align:center">
       <span class="eyebrow">404</span>
-      <h1>Este nudo se deshizo</h1>
-      <p class="lead" style="margin-inline:auto">No encontramos la página que buscas.</p>
-      <a class="btn" href="/tienda">Ir a la tienda</a>
+      <h1>{es.notFound.title}</h1>
+      <p class="lead" style="margin-inline:auto">{es.notFound.text}</p>
+      <a class="btn" href={shopPath('es')}>{es.notFound.cta}</a>
+
+      <hr style="margin:3rem auto;max-width:200px;border:0;border-top:1px solid var(--line)" />
+
+      <h2 lang="en">{en.notFound.title}</h2>
+      <p class="lead" lang="en" style="margin-inline:auto">{en.notFound.text}</p>
+      <a class="btn btn--ghost" lang="en" href={shopPath('en')}>{en.notFound.cta}</a>
     </div>
   </section>
 </Base>

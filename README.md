@@ -50,3 +50,19 @@ Stripe and Mercado Pago in Mexico both support cards, OXXO and SPEI. Shipping la
 ## Photos
 
 Prefer real photos of finished pieces on a neutral background. A few supplied images have visible "Dola AI" watermarks or Instagram UI (mute icon) baked in; swap them with clean originals when you have them, keeping the same file names or updating `src/data/products.ts`.
+
+## Languages (Spanish / English)
+
+Spanish is the default and lives at `/`; English lives at `/en/`.
+
+| Spanish | English |
+|---|---|
+| `/` | `/en/` |
+| `/tienda/` | `/en/shop/` |
+| `/producto/<slug>/` | `/en/product/<slug>/` |
+
+- **UI text** (buttons, headings, WhatsApp messages, SEO descriptions): `src/i18n/ui.ts`. Edit the same key in both `es` and `en`; TypeScript flags a missing key.
+- **Product text** (name, photo description, description): the `text` block of each product in `src/data/products.ts`. A new product needs both `es` and `en`.
+- **Page layout** is shared in `src/views/*`; `src/pages/*` are thin wrappers, one per language.
+- Each page has `hreflang` alternates and a matching sitemap entry, and the header switcher links to the same page in the other language (it keeps the shop category filter).
+- The site never auto-redirects by browser language, so Google can index both versions and links always show what was shared.

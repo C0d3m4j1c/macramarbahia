@@ -1,0 +1,67 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { categories, products } from '../data/products';
+import { shopPath, t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const ui = t(locale);
+const paths = { es: shopPath('es'), en: shopPath('en') };
+---
+
+<Base locale={locale} paths={paths} title={ui.shop.title} description={ui.shop.metaDescription}>
+  <section class="section">
+    <div class="container">
+      <span class="eyebrow">{ui.shop.eyebrow}</span>
+      <h1 style="font-size:clamp(2.2rem,5vw,3.4rem)">{ui.shop.title}</h1>
+
+      <div class="filters" role="group" aria-label={ui.shop.filterLabel}>
+        <button class="chip is-active" data-filter="all">{ui.shop.all}</button>
+        {
+          Object.entries(categories).map(([key, c]) => (
+            <button class="chip" data-filter={key}>
+              {c[locale].label}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="grid" id="grid">
+        {products.map((p, i) => <ProductCard product={p} locale={locale} eager={i < 4} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
+  const cards = document.querySelectorAll<HTMLElement>('#grid .card');
+  const langLinks = document.querySelectorAll<HTMLAnchorElement>('a.lang__item');
+
+  function apply(filter: string) {
+    chips.forEach((c) => c.classList.toggle('is-active', c.dataset.filter === filter));
+    cards.forEach((card) => {
+      card.hidden = !(filter === 'all' || card.dataset.category === filter);
+    });
+    const url = new URL(location.href);
+    if (filter === 'all') url.searchParams.delete('cat');
+    else url.searchParams.set('cat', filter);
+    history.replaceState(null, '', url);
+
+    // Keep the chosen category when switching language.
+    langLinks.forEach((a) => {
+      const u = new URL(a.href);
+      if (filter === 'all') u.searchParams.delete('cat');
+      else u.searchParams.set('cat', filter);
+      a.href = u.toString();
+    });
+  }
+
+  chips.forEach((chip) => chip.addEventListener('click', () => apply(chip.dataset.filter!)));
+
+  const initial = new URLSearchParams(location.search).get('cat');
+  if (initial && [...chips].some((c) => c.dataset.filter === initial)) apply(initial);
+</script>

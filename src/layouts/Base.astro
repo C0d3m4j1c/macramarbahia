@@ -1,14 +1,17 @@
 ---
 import '../styles/global.css';
-import type { ImageMetadata } from 'astro';
+import { getImage as optimize } from 'astro:assets';
 import { getImage } from '../lib/images';
 import { site, waLink } from '../config';
+import { t, locales, localeMeta, type Locale } from '../i18n/ui';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppIcon from '../components/WhatsAppIcon.astro';
-import { getImage as optimize } from 'astro:assets';
 
 interface Props {
+  locale: Locale;
+  /** The URL path of this same page in each language (used by the switcher and hreflang). */
+  paths: Record<Locale, string>;
   title?: string;
   description?: string;
   /** File name inside src/assets/products used for social sharing previews. */
@@ -17,17 +20,25 @@ interface Props {
 }
 
 const {
+  locale,
+  paths,
   title,
-  description = site.description,
+  description,
   ogImage = 'mini-tapiz-canela.jpg',
   jsonLd,
 } = Astro.props;
 
-const fullTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
+const ui = t(locale);
+const meta = localeMeta[locale];
+const origin = Astro.site ?? new URL(site.url);
+const abs = (path: string) => new URL(path, origin).href;
 
-const og = await optimize({ src: getImage(ogImage) as ImageMetadata, width: 1200, format: 'jpg' });
-const ogUrl = new URL(og.src, Astro.site ?? site.url).href;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} — ${ui.meta.tagline}`;
+const desc = description ?? ui.meta.description;
+const canonical = abs(paths[locale]);
+
+const og = await optimize({ src: getImage(ogImage), width: 1200, format: 'jpg' });
+const ogUrl = abs(og.src);
 
 const orgLd = {
   '@context': 'https://schema.org',
@@ -39,21 +50,32 @@ const orgLd = {
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={meta.htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={desc} />
     <link rel="canonical" href={canonical} />
+    {
+      locales.map((l) => (
+        <link rel="alternate" hreflang={localeMeta[l].hreflang} href={abs(paths[l])} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={abs(paths.es)} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#1e2a4a" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
-    <meta property="og:locale" content={site.locale} />
+    <meta property="og:locale" content={meta.og} />
+    {
+      locales
+        .filter((l) => l !== locale)
+        .map((l) => <meta property="og:locale:alternate" content={localeMeta[l].og} />)
+    }
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={desc} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogUrl} />
     <meta name="twitter:card" content="summary_large_image" />
@@ -73,18 +95,18 @@ const orgLd = {
     -->
   </head>
   <body>
-    <Header />
+    <Header locale={locale} paths={paths} />
     <main>
       <slot />
     </main>
-    <Footer />
+    <Footer locale={locale} />
 
     <a
       class="wa-float"
-      href={waLink('Hola Macramar Bahía 👋')}
+      href={waLink(ui.wa.hello)}
       target="_blank"
       rel="noopener"
-      aria-label="Escríbenos por WhatsApp"
+      aria-label={ui.floatWhatsapp}
     >
       <WhatsAppIcon size={30} />
     </a>
